@@ -1,0 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright The Linux Foundation and npm-spdx contributors.
+.DS_Store
+npm-spdx
+scratch/

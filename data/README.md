@@ -1,0 +1,1 @@
+The licenses.json and exceptions.json files in this directory are taken from the version 3.5 release of the SPDX License List, available at: https://github.com/spdx/license-list-data/releases/tag/v3.5
