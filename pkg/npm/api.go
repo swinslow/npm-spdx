@@ -15,6 +15,7 @@ import (
 // and version, and returns a RegistryVersion object with
 // that data.
 func GetVersionData(pkg string, ver string) (*RegistryVersion, error) {
+	fmt.Printf("Getting data for %s/%s\n", pkg, ver)
 	url := "https://registry.npmjs.org/" + pkg + "/" + ver
 
 	// get data from NPM API
