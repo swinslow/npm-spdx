@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"strings"
 )
 
 type licEntry struct {
@@ -68,4 +69,50 @@ func ParseJSONLicenses(licensesPath, exceptionsPath string) (map[string]bool, er
 	}
 
 	return allLics, nil
+}
+
+// IsValidExpression does rudimentary parsing to determine whether
+// a string is a valid SPDX license expression, given a particular
+// version of the SPDX license list. Note that this algorithm is
+// quick-and-dirty and probably needs more attention / expansion.
+func IsValidExpression(s string, listIDs map[string]bool) bool {
+	// NONE and NOASSERTION are valid
+	if s == "NONE" || s == "NOASSERTION" {
+		return true
+	}
+
+	// if there is only one LPAREN and one RPAREN, and they are
+	// at the start and end respectively, strip them off
+	if strings.Count(s, "(") == 1 && strings.HasPrefix(s, "(") &&
+		strings.Count(s, ")") == 1 && strings.HasSuffix(s, ")") {
+		s = strings.TrimPrefix(s, "(")
+		s = strings.TrimSuffix(s, ")")
+	}
+
+	// ignore all '+' characters, we'll treat them as valid
+	strings.ReplaceAll(s, "+", "")
+
+	// if there's ANDs or ORs, split them
+	// FIXME currently doing as case-sensitive splits, must be
+	// FIXME capitalized; this is not correct
+	andStrs := strings.SplitN(s, " AND ", -1)
+
+	// now split each of those by " OR "
+	strs := []string{}
+	for _, st := range andStrs {
+		orStrs := strings.SplitN(st, " OR ", -1)
+		for _, orSt := range orStrs {
+			strs = append(strs, orSt)
+		}
+	}
+
+	// finally, strs should now contain the 'processed' set of
+	// license IDs, so we can compare each to the license list
+	for _, st := range strs {
+		if _, ok := listIDs[st]; !ok {
+			return false
+		}
+	}
+
+	return true
 }

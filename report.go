@@ -53,17 +53,7 @@ func report(jsResults string, jsReportOutput string) {
 			le = &licEntry{}
 			le.LicID = l
 
-			// FIXME note that the "valid" field in the report function
-			// FIXME does not currently handle expressions (e.g., using
-			// FIXME AND / OR / + / WITH to describe multiple licenses or
-			// FIXME exceptions; only a single identifier is marked as
-			// FIXME being "valid"
-			_, isSPDX := allLics[l]
-			// also allow NONE and NOASSERTION as valid
-			if l == "NONE" || l == "NOASSERTION" {
-				isSPDX = true
-			}
-			le.IsSPDX = isSPDX
+			le.IsSPDX = spdxlicenses.IsValidExpression(l, allLics)
 
 			le.Deps = []packageVersion{}
 			lics[l] = le
