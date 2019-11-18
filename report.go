@@ -13,8 +13,10 @@ import (
 )
 
 type packageVersion struct {
-	Pkg string `json:"package"`
-	Ver string `json:"version"`
+	Pkg            string `json:"package"`
+	Ver            string `json:"version"`
+	IsDirectDep    bool   `json:"isDirectDep,omitempty"`
+	IsDirectDevDep bool   `json:"isDirectDevDep,omitempty"`
 }
 
 type licEntry struct {
@@ -33,34 +35,48 @@ func report(jsResults string, jsReportOutput string) {
 	}
 
 	// load results
-	allResults, err := npm.LoadVersionData(jsResults)
+	dr, err := npm.LoadResults(jsResults)
 	if err != nil {
 		log.Fatalf("error loading from %s: %v", jsResults, err)
 	}
 
 	// analyze
 	lics := map[string]*licEntry{}
-	for p, pData := range allResults {
-		for v, vData := range pData {
-			l := vData.License
-			if l == "" {
-				l = "NOASSERTION"
-			}
-			le, ok := lics[l]
-			if !ok {
-				// create new empty licEntry
-				le = &licEntry{}
-				le.LicID = l
-				_, isSPDX := allLics[l]
-				le.IsSPDX = isSPDX
-				le.Deps = []packageVersion{}
-				lics[l] = le
-			}
-
-			// add this version
-			pv := packageVersion{Pkg: p, Ver: v}
-			le.Deps = append(le.Deps, pv)
+	for p, pData := range dr.Results {
+		l := pData.License
+		if l == "" {
+			l = "NOASSERTION"
 		}
+		le, ok := lics[l]
+		if !ok {
+			// create new empty licEntry
+			le = &licEntry{}
+			le.LicID = l
+
+			// FIXME note that the "valid" field in the report function
+			// FIXME does not currently handle expressions (e.g., using
+			// FIXME AND / OR / + / WITH to describe multiple licenses or
+			// FIXME exceptions; only a single identifier is marked as
+			// FIXME being "valid"
+			_, isSPDX := allLics[l]
+			// also allow NONE and NOASSERTION as valid
+			if l == "NONE" || l == "NOASSERTION" {
+				isSPDX = true
+			}
+			le.IsSPDX = isSPDX
+
+			le.Deps = []packageVersion{}
+			lics[l] = le
+		}
+
+		// add this version
+		pv := packageVersion{
+			Pkg:            p,
+			Ver:            pData.Version,
+			IsDirectDep:    pData.IsDirectDep,
+			IsDirectDevDep: pData.IsDirectDevDep,
+		}
+		le.Deps = append(le.Deps, pv)
 	}
 
 	// create JSON output

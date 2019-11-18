@@ -12,10 +12,10 @@ func printMainUsage() {
 	log.Fatalf(`
 Usage: %s <COMMAND> [arguments]
 
-    Commands:
-        retrieve    - retrieve dependency info from NPM API and save to disk
-		report      - load previously-retrieved dependency info and print summary details
-		spdx        - load previously-retrieved dependency info and save as SPDX tag-value file
+Commands:
+	retrieve    - retrieve dependency info from NPM API and save to disk
+	report      - load previously-retrieved dependency info and print summary details
+	spdx        - load previously-retrieved dependency info and save as SPDX tag-value file
 
 `, os.Args[0])
 }
@@ -33,9 +33,9 @@ func checkUsage() {
 			log.Fatalf(`
 Usage: %s retrieve <PACKAGE.JSON> <PACKAGE-LOCK.JSON> <RESULTS.JSON>
 
-    PACKAGE.JSON:       path to package.json file for analysis
-	PACKAGE-LOCK.JSON:  path to package-lock.json file for analysis
-    RESULTS.JSON:       output path for results of API queries
+PACKAGE.JSON:       path to package.json file for analysis
+PACKAGE-LOCK.JSON:  path to package-lock.json file for analysis
+RESULTS.JSON:       output path for results of API queries
 `, os.Args[0])
 		}
 
@@ -44,8 +44,8 @@ Usage: %s retrieve <PACKAGE.JSON> <PACKAGE-LOCK.JSON> <RESULTS.JSON>
 			log.Fatalf(`
 Usage: %s report <RESULTS.JSON> <SUMMARY.JSON>
 
-	RESULTS.JSON:       path to results from API queries (from prior 'retrieve' step)
-	SUMMARY.JSON:       output path for categorized JSON license results
+RESULTS.JSON:       path to results from API queries (from prior 'retrieve' step)
+SUMMARY.JSON:       output path for categorized JSON license results
 `, os.Args[0])
 		}
 
@@ -54,8 +54,8 @@ Usage: %s report <RESULTS.JSON> <SUMMARY.JSON>
 			log.Fatalf(`
 Usage: %s spdx <RESULTS.JSON> <OUTPUT.SPDX>
 
-    RESULTS.JSON:       path to results from API queries (from prior 'retrieve' step)
-    OUTPUT.SPDX:        output path for SPDX tag-value file
+RESULTS.JSON:       path to results from API queries (from prior 'retrieve' step)
+OUTPUT.SPDX:        output path for SPDX tag-value file
 `, os.Args[0])
 		}
 

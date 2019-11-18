@@ -12,19 +12,39 @@ package npm
 type RegistryVersion struct {
 	Name            string            `json:"name"`
 	Version         string            `json:"version"`
-	License         string            `json:"license,omitempty"`
+	License         interface{}       `json:"license,omitempty"`
 	Dependencies    map[string]string `json:"dependencies,omitempty"`
 	DevDependencies map[string]string `json:"devDependencies,omitempty"`
 }
 
-// RegistryPackage maps a package's version strings to the
-// corresponding version-specific details.
-type RegistryPackage map[string]*RegistryVersion
+// RegistryScopedPackage handles the multiple versions that
+// are pulled when querying the NPM APIs for a scoped package.
+type RegistryScopedPackage struct {
+	Versions map[string]*RegistryVersion `json:"versions"`
+}
 
-// RegistryResults maps a dependency's name to its
-// RegistryPackage, which itself contains the corresponding
+// Dependency contains the processed, version-specific details
+// about one dependency used (directly or indirectly) by the
+// main package.
+type Dependency struct {
+	Name            string            `json:"name"`
+	Version         string            `json:"version"`
+	License         string            `json:"license,omitempty"`
+	Dependencies    map[string]string `json:"dependencies,omitempty"`
+	DevDependencies map[string]string `json:"devDependencies,omitempty"`
+	IsDirectDep     bool              `json:"isDirectDep,omitempty"`
+	IsDirectDevDep  bool              `json:"isDirectDevDep,omitempty"`
+}
+
+// DependencyResults maps a dependency's name to its
+// Dependency, which itself contains the corresponding
 // version-specific details.
-type RegistryResults map[string]RegistryPackage
+type DependencyResults struct {
+	Name    string                 `json:"name"`
+	Version string                 `json:"version"`
+	License string                 `json:"license,omitempty"`
+	Results map[string]*Dependency `json:"results"`
+}
 
 // PackageManifest represents the data from a package.json
 // file.
