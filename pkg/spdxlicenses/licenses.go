@@ -116,3 +116,31 @@ func IsValidExpression(s string, listIDs map[string]bool) bool {
 
 	return true
 }
+
+// ConvertToLicenseRef takes a license string and returns a
+// LicenseRef-formatted equivalent, converting invalid
+// characters to valid ones. It does _not_ check whether a
+// different string has also been formatted into this same
+// LicenseRef-, so the caller will need to check that and
+// perhaps append a unique suffix if needed to distinguish.
+func ConvertToLicenseRef(orig string) string {
+	// valid characters are alpha, digit, - and .
+	// convert all others to hyphens
+
+	cvt := func(r rune) rune {
+		switch {
+		case r >= 'A' && r <= 'Z':
+			return r
+		case r >= 'a' && r <= 'z':
+			return r
+		case r >= '0' && r <= '9':
+			return r
+		case r == '-' || r == '.':
+			return r
+		default:
+			return '-'
+		}
+	}
+
+	return "LicenseRef-" + strings.Map(cvt, orig)
+}

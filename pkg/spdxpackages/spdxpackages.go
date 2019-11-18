@@ -6,16 +6,26 @@ package spdxpackages
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/spdx/tools-golang/v0/spdx"
 	"github.com/swinslow/npm-spdx/pkg/npm"
+	"github.com/swinslow/npm-spdx/pkg/spdxlicenses"
 )
 
 // BuildSPDXDocument takes the processed license and dependency data
 // from a previously-generated results.json file, and returns an SPDX
 // document based on them, together with the relevant relationship details.
 func BuildSPDXDocument(dr *npm.DependencyResults) (*spdx.Document2_1, error) {
+	// load valid license IDs
+	llPath := "data/licenses.json"
+	elPath := "data/exceptions.json"
+	allLics, err := spdxlicenses.ParseJSONLicenses(llPath, elPath)
+	if err != nil {
+		log.Fatalf("error loading SPDX license IDs from %s, %s: %v", llPath, elPath, err)
+	}
+
 	// build creation info section
 	// FIXME namespace should be unique, see SPDX 2.1 spec section 2.5
 	namespace := fmt.Sprintf("https://spdx.org/spdxdocs/%s-%s", dr.Name, dr.Version)
@@ -26,12 +36,24 @@ func BuildSPDXDocument(dr *npm.DependencyResults) (*spdx.Document2_1, error) {
 	// at the same time
 	pkgs := []*spdx.Package2_1{}
 	rlns := []*spdx.Relationship2_1{}
+	ols := []*spdx.OtherLicense2_1{}
+
+	// also track which converted "other licenses" we have created
+	convertedLics := map[string]bool{}
 
 	// build entry for main package
 	lic := dr.License
 	if lic == "" {
 		lic = "NOASSERTION"
 	}
+	// make sure the main package license is valid too!
+	if !spdxlicenses.IsValidExpression(lic, allLics) {
+		lic = spdxlicenses.ConvertToLicenseRef(lic)
+		convertedLics[lic] = true
+		ol := buildOtherLicense(lic, dr.License)
+		ols = append(ols, ol)
+	}
+
 	mainPkg := buildPackageSection(dr.Name, dr.Version, "NOASSERTION", lic)
 	pkgs = append(pkgs, mainPkg)
 
@@ -44,8 +66,45 @@ func BuildSPDXDocument(dr *npm.DependencyResults) (*spdx.Document2_1, error) {
 	rlns = append(rlns, mainRln)
 
 	for _, rp := range dr.Results {
+		// convert license if needed
+		pkgLic := rp.License
+		if !spdxlicenses.IsValidExpression(pkgLic, allLics) {
+			// first see if we've already got an OtherLicense entry
+			// for this one
+			foundMatch := false
+			for _, ol := range ols {
+				if ol.ExtractedText == pkgLic {
+					pkgLic = ol.LicenseIdentifier
+					foundMatch = true
+				}
+			}
+
+			if !foundMatch {
+				// convert it to LicenseRef format
+				pkgLic = spdxlicenses.ConvertToLicenseRef(pkgLic)
+
+				// and now make sure that we find a free ID
+				if _, ok := convertedLics[pkgLic]; ok {
+					var newConverted string
+					for i := 1; ; i++ {
+						newConverted = fmt.Sprintf("%s-%d", pkgLic, i)
+						if _, ok := convertedLics[newConverted]; !ok {
+							break
+						}
+					}
+					pkgLic = newConverted
+				}
+
+				// and now add it to the list and build other license section
+				convertedLics[pkgLic] = true
+				ol := buildOtherLicense(pkgLic, rp.License)
+				ols = append(ols, ol)
+			}
+
+		}
+
 		// FIXME for now, don't fill in PackageDownloadLocation
-		pkg := buildPackageSection(rp.Name, rp.Version, "NOASSERTION", rp.License)
+		pkg := buildPackageSection(rp.Name, rp.Version, "NOASSERTION", pkgLic)
 		pkgs = append(pkgs, pkg)
 
 		// build relationships
@@ -73,6 +132,7 @@ func BuildSPDXDocument(dr *npm.DependencyResults) (*spdx.Document2_1, error) {
 		CreationInfo:  ci,
 		Packages:      pkgs,
 		Relationships: rlns,
+		OtherLicenses: ols,
 	}
 
 	return doc, nil
@@ -154,4 +214,17 @@ func buildDevDependencyRelationship(pkgName, pkgVer, depName, depVer string) *sp
 	}
 
 	return rln
+}
+
+func buildOtherLicense(converted, orig string) *spdx.OtherLicense2_1 {
+	cmt := fmt.Sprintf("Represents the license expression '%s' which is not on the SPDX License List", orig)
+
+	ol := &spdx.OtherLicense2_1{
+		LicenseIdentifier: converted,
+		ExtractedText:     orig,
+		LicenseName:       orig,
+		LicenseComment:    cmt,
+	}
+
+	return ol
 }
