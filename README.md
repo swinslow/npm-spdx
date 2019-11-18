@@ -5,6 +5,10 @@ information for dependencies from a `package.json` manifest. It generates an
 [SPDX](https://spdx.org) document containing that information and the
 corresponding subdependency relationships.
 
+## Example
+
+See the [examples](examples/) directory for a quick usage example.
+
 ## Usage
 
 Compile with `go build`, then:
