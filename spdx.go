@@ -7,7 +7,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/spdx/tools-golang/v0/tvsaver"
+	"github.com/spdx/tools-golang/tvsaver"
 	"github.com/swinslow/npm-spdx/pkg/npm"
 	"github.com/swinslow/npm-spdx/pkg/spdxpackages"
 )

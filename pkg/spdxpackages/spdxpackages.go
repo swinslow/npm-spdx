@@ -9,7 +9,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/spdx/tools-golang/v0/spdx"
+	"github.com/spdx/tools-golang/spdx"
 	"github.com/swinslow/npm-spdx/pkg/npm"
 	"github.com/swinslow/npm-spdx/pkg/spdxlicenses"
 )

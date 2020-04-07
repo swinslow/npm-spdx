@@ -1,2 +1,4 @@
 github.com/spdx/tools-golang v0.0.0-20190418005930-ea86b81b8378 h1:ep+suiQms04CE3xNH/6FR0Reav68BVy1RPxRFaF1pU0=
 github.com/spdx/tools-golang v0.0.0-20190418005930-ea86b81b8378/go.mod h1:5t3Ma1RxvN2FhT7DgORFq1o4WoxggoiZQzybTVS26TM=
+github.com/spdx/tools-golang v0.0.0-20200217195342-b68821f66a8d h1:qWQhznfBR0NvJMx7xuyl7nKRKvF0/mnoQs+37bDcHLU=
+github.com/spdx/tools-golang v0.0.0-20200217195342-b68821f66a8d/go.mod h1:1ey0Na9z725ziiGg5SikNn9cP/PjQPGeQtt2eqABDLU=
