@@ -49,6 +49,13 @@ This will read in the `results.json` file you obtained from Step 1, and process
 it into a JSON file that will be saved to the file specified in
 `<SUMMARY.JSON>`.
 
+### Using Docker
+
+Alternatively, you can build and run npm-spdx using Docker.
+Clone this repository and run `docker build -t npm-spdx .`
+Then you can use npm-spdx by running:
+`docker run --rm -v <PROJECT_PATH>:<CONTAINER_PATH> npm-spdx ...`
+
 ## License
 
 npm-spdx is available under the [Apache License, version 2.0](LICENSE).
